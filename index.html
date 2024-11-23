@@ -94,14 +94,6 @@
             background-color: #f44336;
         }
 
-        .Cancelada {
-            background-color: #9e9e9e;
-        }
-
-        .PagoPendiente {
-            background-color: #ffc107;
-        }
-
         /* Estilo del modal */
         .modal {
             position: fixed;
@@ -177,12 +169,7 @@
             <h2>Cambiar estado de la habitación</h2>
             <p id="modal-room-number">Habitación: </p>
             <select id="modal-select">
-                <option value="" disabled selected>Seleccione un estado</option>
-                <option value="Disponible">Disponible</option>
-                <option value="Reservada">Reservada</option>
-                <option value="Ocupada">Ocupada</option>
-                <option value="Cancelada">Cancelada</option>
-                <option value="PagoPendiente">Pago Pendiente</option>
+                <!-- Opciones generadas dinámicamente -->
             </select>
             <button onclick="guardarEstado()">Guardar</button>
         </div>
@@ -194,9 +181,7 @@
             { numero: 101, tipo: "Simple", estado: "Disponible" },
             { numero: 102, tipo: "Doble", estado: "Ocupada" },
             { numero: 103, tipo: "Matrimonial", estado: "Reservada" },
-            { numero: 104, tipo: "Suite", estado: "PagoPendiente" },
-            { numero: 105, tipo: "Simple", estado: "Disponible" },
-            { numero: 106, tipo: "Doble", estado: "Cancelada" },
+            { numero: 104, tipo: "Suite", estado: "Disponible" },
         ];
 
         const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
@@ -207,6 +192,13 @@
         const modalSelect = document.getElementById("modal-select");
 
         let currentRoom = null;
+
+        // Opciones válidas por estado
+        const opcionesEstado = {
+            Disponible: ["Reservada", "Ocupada"],
+            Reservada: ["Disponible", "Ocupada"],
+            Ocupada: ["Disponible"],
+        };
 
         // Renderizar las habitaciones
         function renderRooms() {
@@ -227,8 +219,20 @@
         function abrirModal(habitacion) {
             currentRoom = habitacion;
             modalRoomNumber.textContent = `Habitación: ${habitacion.numero}`;
-            modalSelect.value = "";
+            generarOpciones(habitacion.estado);
             modal.classList.add("active");
+        }
+
+        // Generar las opciones del selector según el estado actual
+        function generarOpciones(estadoActual) {
+            modalSelect.innerHTML = "";
+            const opciones = opcionesEstado[estadoActual] || [];
+            opciones.forEach((opcion) => {
+                const opt = document.createElement("option");
+                opt.value = opcion;
+                opt.textContent = opcion;
+                modalSelect.appendChild(opt);
+            });
         }
 
         // Guardar el estado
