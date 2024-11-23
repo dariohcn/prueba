@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Habitaciones - Hotel</title>
     <style>
+        /* Mantengo el estilo existente */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f4f9;
@@ -19,11 +20,6 @@
             padding: 20px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 28px;
         }
 
         main {
@@ -43,8 +39,8 @@
         }
 
         .room-card {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 10px;
             text-align: center;
             padding: 5px;
@@ -59,25 +55,9 @@
             font-size: 12px;
         }
 
-        .room-card.Disponible {
-            background-color: #4CAF50;
-        }
-
-        .room-card.Reservada {
-            background-color: #FF9800;
-        }
-
-        .room-card.Ocupada {
-            background-color: #F44336;
-        }
-
-        .room-number {
-            font-size: 14px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-            padding: 3px 5px;
-            font-weight: bold;
-        }
+        .room-card.Disponible { background-color: #4CAF50; }
+        .room-card.Reservada { background-color: #FF9800; }
+        .room-card.Ocupada { background-color: #F44336; }
 
         .modal {
             position: fixed;
@@ -105,26 +85,6 @@
             border-radius: 10px;
             text-align: center;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-content select,
-        .modal-content button {
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .modal-content button {
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-        }
-
-        .modal-content button:hover {
-            background-color: #45a049;
         }
     </style>
 </head>
@@ -165,13 +125,11 @@
         }));
 
         const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
-
         const container = document.getElementById("rooms-container");
         const modal = document.getElementById("modal");
         const modalRoomNumber = document.getElementById("modal-room-number");
         const modalStateSelect = document.getElementById("modal-state-select");
         const modalPaymentSelect = document.getElementById("modal-payment-select");
-
         let currentRoom = null;
 
         const channel = new BroadcastChannel("hotel-habitaciones");
@@ -179,16 +137,15 @@
 
         function renderRooms() {
             container.innerHTML = "";
-            habitaciones.forEach((hab) => {
+            habitaciones.forEach(hab => {
                 const card = document.createElement("div");
                 card.className = `room-card ${hab.estado}`;
                 card.onclick = () => abrirModal(hab);
                 card.innerHTML = `
-                    <div class="room-number">${hab.numero}</div>
+                    <div>${hab.numero}</div>
                     <div>${hab.tipo}</div>
                     <div>${hab.estado}</div>
-                    <div>${hab.formaPago || ""}</div>
-                `;
+                    <div>${hab.formaPago || ""}</div>`;
                 container.appendChild(card);
             });
         }
@@ -196,39 +153,33 @@
         function abrirModal(habitacion) {
             currentRoom = habitacion;
             modalRoomNumber.textContent = `Número: ${habitacion.numero}`;
-            modalStateSelect.innerHTML = estados
-                .map((estado) => `<option value="${estado}" ${habitacion.estado === estado ? "selected" : ""}>${estado}</option>`)
-                .join("");
+            modalStateSelect.innerHTML = estados.map(estado => `
+                <option value="${estado}" ${habitacion.estado === estado ? "selected" : ""}>
+                    ${estado}
+                </option>`).join("");
             modalPaymentSelect.value = habitacion.formaPago || "";
             modal.classList.add("active");
         }
 
         function guardarEstado() {
-            const nuevoEstado = modalStateSelect.value;
-            const nuevaFormaPago = modalPaymentSelect.value;
-
-            if (nuevoEstado && currentRoom) {
-                currentRoom.estado = nuevoEstado;
-                currentRoom.formaPago = nuevoEstado === "Disponible" ? "" : nuevaFormaPago;
-                guardarDatos();
-                enviarActualizacion();
+            if (currentRoom) {
+                currentRoom.estado = modalStateSelect.value;
+                currentRoom.formaPago = modalStateSelect.value === "Disponible" ? "" : modalPaymentSelect.value;
+                sincronizarHabitaciones();
                 modal.classList.remove("active");
                 renderRooms();
             }
         }
 
-        function guardarDatos() {
+        function sincronizarHabitaciones() {
             localStorage.setItem("habitaciones", JSON.stringify(habitaciones));
+            channel.postMessage(habitaciones);
         }
 
-        function enviarActualizacion() {
-            channel.postMessage({ habitaciones });
-        }
-
-        channel.onmessage = (e) => {
-            if (e.data.habitaciones) {
+        channel.onmessage = e => {
+            if (e.data) {
                 habitaciones.length = 0;
-                habitaciones.push(...e.data.habitaciones);
+                habitaciones.push(...e.data);
                 renderRooms();
             }
         };
