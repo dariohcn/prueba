@@ -49,8 +49,8 @@
         }
 
         .room-card {
-            width: 150px;
-            height: 150px;
+            width: 200px;
+            height: 200px;
             background: #f9f9f9;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -58,7 +58,7 @@
             padding: 10px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-around;
             align-items: center;
             cursor: pointer;
             position: relative;
@@ -94,6 +94,14 @@
             background-color: #f44336;
         }
 
+        .Cancelado {
+            background-color: #9e9e9e;
+        }
+
+        .PagoPendiente {
+            background-color: #ffc107;
+        }
+
         /* Estilo del modal */
         .modal {
             position: fixed;
@@ -127,7 +135,7 @@
             margin-bottom: 20px;
         }
 
-        .modal-content select {
+        .modal-content select, .modal-content button {
             padding: 10px;
             border-radius: 5px;
             border: 1px solid #ddd;
@@ -137,14 +145,9 @@
         }
 
         .modal-content button {
-            padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
         }
 
         .modal-content button:hover {
@@ -166,10 +169,18 @@
     <!-- Modal para cambiar estado -->
     <div class="modal" id="modal">
         <div class="modal-content">
-            <h2>Cambiar estado de la habitación</h2>
+            <h2>Detalles de la habitación</h2>
             <p id="modal-room-number">Habitación: </p>
-            <select id="modal-select">
+            <label for="modal-state-select">Estado:</label>
+            <select id="modal-state-select">
                 <!-- Opciones generadas dinámicamente -->
+            </select>
+            <label for="modal-payment-select">Forma de Pago:</label>
+            <select id="modal-payment-select">
+                <option value="" disabled selected>Seleccione una forma de pago</option>
+                <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
             </select>
             <button onclick="guardarEstado()">Guardar</button>
         </div>
@@ -178,10 +189,10 @@
     <script>
         // Habitaciones iniciales
         const initialData = [
-            { numero: 101, tipo: "Simple", estado: "Disponible" },
-            { numero: 102, tipo: "Doble", estado: "Ocupada" },
-            { numero: 103, tipo: "Matrimonial", estado: "Reservada" },
-            { numero: 104, tipo: "Simple", estado: "Disponible" },
+            { numero: 101, estado: "Disponible", formaPago: "" },
+            { numero: 102, estado: "Reservada", formaPago: "" },
+            { numero: 103, estado: "Ocupada", formaPago: "" },
+            { numero: 104, estado: "PagoPendiente", formaPago: "" },
         ];
 
         const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
@@ -189,16 +200,13 @@
         const container = document.getElementById("rooms-container");
         const modal = document.getElementById("modal");
         const modalRoomNumber = document.getElementById("modal-room-number");
-        const modalSelect = document.getElementById("modal-select");
+        const modalStateSelect = document.getElementById("modal-state-select");
+        const modalPaymentSelect = document.getElementById("modal-payment-select");
 
         let currentRoom = null;
 
-        // Opciones válidas por estado
-        const opcionesEstado = {
-            Disponible: ["Reservada", "Ocupada"],
-            Reservada: ["Disponible", "Ocupada"],
-            Ocupada: ["Disponible"],
-        };
+        // Estados posibles
+        const estados = ["Disponible", "Reservada", "Ocupada", "Cancelado", "PagoPendiente"];
 
         // Renderizar las habitaciones
         function renderRooms() {
@@ -210,6 +218,7 @@
                 card.innerHTML = `
                     <div class="room-number">${hab.numero}</div>
                     <div class="room-status ${hab.estado}">${hab.estado}</div>
+                    <div>Forma de pago: <strong>${hab.formaPago || "N/A"}</strong></div>
                 `;
                 container.appendChild(card);
             });
@@ -219,27 +228,21 @@
         function abrirModal(habitacion) {
             currentRoom = habitacion;
             modalRoomNumber.textContent = `Habitación: ${habitacion.numero}`;
-            generarOpciones(habitacion.estado);
+            modalStateSelect.innerHTML = estados
+                .map((estado) => `<option value="${estado}" ${habitacion.estado === estado ? "selected" : ""}>${estado}</option>`)
+                .join("");
+            modalPaymentSelect.value = habitacion.formaPago || "";
             modal.classList.add("active");
         }
 
-        // Generar las opciones del selector según el estado actual
-        function generarOpciones(estadoActual) {
-            modalSelect.innerHTML = "";
-            const opciones = opcionesEstado[estadoActual] || [];
-            opciones.forEach((opcion) => {
-                const opt = document.createElement("option");
-                opt.value = opcion;
-                opt.textContent = opcion;
-                modalSelect.appendChild(opt);
-            });
-        }
-
-        // Guardar el estado
+        // Guardar el estado y forma de pago
         function guardarEstado() {
-            const nuevoEstado = modalSelect.value;
+            const nuevoEstado = modalStateSelect.value;
+            const nuevaFormaPago = modalPaymentSelect.value;
+
             if (nuevoEstado && currentRoom) {
                 currentRoom.estado = nuevoEstado;
+                currentRoom.formaPago = nuevaFormaPago || "N/A";
                 guardarDatos();
                 modal.classList.remove("active");
                 renderRooms();
