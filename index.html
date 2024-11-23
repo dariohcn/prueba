@@ -205,6 +205,9 @@
 
         let currentRoom = null;
 
+        // BroadcastChannel para sincronización
+        const channel = new BroadcastChannel("habitaciones");
+
         // Estados posibles
         const estados = ["Disponible", "Reservada", "Ocupada", "Cancelado", "PagoPendiente"];
 
@@ -244,6 +247,7 @@
                 currentRoom.estado = nuevoEstado;
                 currentRoom.formaPago = nuevaFormaPago || "N/A";
                 guardarDatos();
+                enviarActualizacion();
                 modal.classList.remove("active");
                 renderRooms();
             }
@@ -254,20 +258,17 @@
             localStorage.setItem("habitaciones", JSON.stringify(habitaciones));
         }
 
-        // Sincronizar datos entre pestañas
-        window.addEventListener("storage", () => {
-            const data = JSON.parse(localStorage.getItem("habitaciones"));
-            if (data) {
-                habitaciones.length = 0;
-                habitaciones.push(...data);
-                renderRooms();
-            }
-        });
+        // Enviar actualización por BroadcastChannel
+        function enviarActualizacion() {
+            channel.postMessage({ habitaciones });
+        }
 
-        // Cerrar el modal al hacer clic fuera
-        modal.onclick = (e) => {
-            if (e.target === modal) {
-                modal.classList.remove("active");
+        // Escuchar actualizaciones de BroadcastChannel
+        channel.onmessage = (e) => {
+            if (e.data.habitaciones) {
+                habitaciones.length = 0;
+                habitaciones.push(...e.data.habitaciones);
+                renderRooms();
             }
         };
 
