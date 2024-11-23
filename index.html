@@ -153,6 +153,13 @@
             <select id="modal-state-select">
                 <!-- Opciones generadas dinámicamente -->
             </select>
+            <label for="modal-payment-select">Forma de Pago:</label>
+            <select id="modal-payment-select">
+                <option value="" disabled selected>Seleccione una forma de pago</option>
+                <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+            </select>
             <button onclick="guardarEstado()">Guardar</button>
         </div>
     </div>
@@ -160,10 +167,10 @@
     <script>
         // Habitaciones iniciales
         const initialData = [
-            { numero: 101, estado: "Disponible" },
-            { numero: 102, estado: "Reservada" },
-            { numero: 103, estado: "Ocupada" },
-            { numero: 104, estado: "Disponible" },
+            { numero: 101, estado: "Disponible", formaPago: "" },
+            { numero: 102, estado: "Reservada", formaPago: "Efectivo" },
+            { numero: 103, estado: "Ocupada", formaPago: "Tarjeta de Crédito" },
+            { numero: 104, estado: "Disponible", formaPago: "" },
         ];
 
         const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
@@ -172,6 +179,7 @@
         const modal = document.getElementById("modal");
         const modalRoomNumber = document.getElementById("modal-room-number");
         const modalStateSelect = document.getElementById("modal-state-select");
+        const modalPaymentSelect = document.getElementById("modal-payment-select");
 
         let currentRoom = null;
 
@@ -188,6 +196,7 @@
                 card.innerHTML = `
                     <div class="room-number">Habitación ${hab.numero}</div>
                     <div>${hab.estado}</div>
+                    <div>Forma de pago: <strong>${hab.formaPago || ""}</strong></div>
                 `;
                 container.appendChild(card);
             });
@@ -200,14 +209,21 @@
             modalStateSelect.innerHTML = estados
                 .map((estado) => `<option value="${estado}" ${habitacion.estado === estado ? "selected" : ""}>${estado}</option>`)
                 .join("");
+            modalPaymentSelect.value = habitacion.formaPago || "";
             modal.classList.add("active");
         }
 
-        // Guardar el estado
+        // Guardar el estado y forma de pago
         function guardarEstado() {
             const nuevoEstado = modalStateSelect.value;
+            const nuevaFormaPago = modalPaymentSelect.value;
+
             if (nuevoEstado && currentRoom) {
                 currentRoom.estado = nuevoEstado;
+
+                // Si la habitación se pone en "Disponible", limpiar la forma de pago
+                currentRoom.formaPago = nuevoEstado === "Disponible" ? "" : nuevaFormaPago;
+
                 guardarDatos();
                 modal.classList.remove("active");
                 renderRooms();
