@@ -50,7 +50,7 @@
 
         .room-card {
             width: 200px;
-            height: 150px;
+            height: 180px;
             border-radius: 10px;
             text-align: center;
             padding: 10px;
@@ -82,7 +82,14 @@
 
         .room-number {
             font-size: 18px;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        .room-payment {
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 5px;
             padding: 5px 10px;
         }
@@ -160,6 +167,13 @@
             <select id="modal-state-select">
                 <!-- Opciones generadas dinámicamente -->
             </select>
+            <label for="modal-payment-select">Forma de Pago:</label>
+            <select id="modal-payment-select">
+                <option value="" disabled selected>Seleccione una forma de pago</option>
+                <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+            </select>
             <button onclick="guardarEstado()">Guardar</button>
         </div>
     </div>
@@ -167,10 +181,10 @@
     <script>
         // Habitaciones iniciales
         const initialData = [
-            { numero: 101, tipo: "Simple", estado: "Disponible" },
-            { numero: 102, tipo: "Doble", estado: "Reservada" },
-            { numero: 103, tipo: "Matrimonial", estado: "Ocupada" },
-            { numero: 104, tipo: "Suite", estado: "Disponible" },
+            { numero: 101, tipo: "Simple", estado: "Disponible", formaPago: "" },
+            { numero: 102, tipo: "Doble", estado: "Reservada", formaPago: "Efectivo" },
+            { numero: 103, tipo: "Matrimonial", estado: "Ocupada", formaPago: "Tarjeta de Crédito" },
+            { numero: 104, tipo: "Suite", estado: "Disponible", formaPago: "" },
         ];
 
         const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
@@ -179,8 +193,12 @@
         const modal = document.getElementById("modal");
         const modalRoomNumber = document.getElementById("modal-room-number");
         const modalStateSelect = document.getElementById("modal-state-select");
+        const modalPaymentSelect = document.getElementById("modal-payment-select");
 
         let currentRoom = null;
+
+        // BroadcastChannel para sincronización en tiempo real
+        const channel = new BroadcastChannel("hotel-habitaciones");
 
         // Estados posibles
         const estados = ["Disponible", "Reservada", "Ocupada"];
@@ -196,6 +214,7 @@
                     <div class="room-number">${hab.numero}</div>
                     <div>${hab.tipo}</div>
                     <div>${hab.estado}</div>
+                    <div class="room-payment">${hab.formaPago || ""}</div>
                 `;
                 container.appendChild(card);
             });
@@ -208,15 +227,20 @@
             modalStateSelect.innerHTML = estados
                 .map((estado) => `<option value="${estado}" ${habitacion.estado === estado ? "selected" : ""}>${estado}</option>`)
                 .join("");
+            modalPaymentSelect.value = habitacion.formaPago || "";
             modal.classList.add("active");
         }
 
-        // Guardar el estado
+        // Guardar el estado y forma de pago
         function guardarEstado() {
             const nuevoEstado = modalStateSelect.value;
+            const nuevaFormaPago = modalPaymentSelect.value;
+
             if (nuevoEstado && currentRoom) {
                 currentRoom.estado = nuevoEstado;
+                currentRoom.formaPago = nuevoEstado === "Disponible" ? "" : nuevaFormaPago;
                 guardarDatos();
+                enviarActualizacion();
                 modal.classList.remove("active");
                 renderRooms();
             }
@@ -226,6 +250,20 @@
         function guardarDatos() {
             localStorage.setItem("habitaciones", JSON.stringify(habitaciones));
         }
+
+        // Enviar actualización por BroadcastChannel
+        function enviarActualizacion() {
+            channel.postMessage({ habitaciones });
+        }
+
+        // Escuchar actualizaciones por BroadcastChannel
+        channel.onmessage = (e) => {
+            if (e.data.habitaciones) {
+                habitaciones.length = 0;
+                habitaciones.push(...e.data.habitaciones);
+                renderRooms();
+            }
+        };
 
         // Sincronizar datos entre pestañas
         window.addEventListener("storage", () => {
