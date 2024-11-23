@@ -44,16 +44,16 @@
         .rooms-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 10px;
             justify-content: center;
         }
 
         .room-card {
-            width: 150px; /* Antes: 200px */
-            height: 120px; /* Antes: 180px */
+            width: 120px; /* Reducido */
+            height: 100px; /* Reducido */
             border-radius: 10px;
             text-align: center;
-            padding: 10px;
+            padding: 5px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -81,17 +81,17 @@
         }
 
         .room-number {
-            font-size: 18px;
+            font-size: 16px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 5px;
-            padding: 5px 10px;
+            padding: 3px 5px;
         }
 
         .room-payment {
-            font-size: 14px;
+            font-size: 12px;
             background: rgba(0, 0, 0, 0.2);
             border-radius: 5px;
-            padding: 5px 10px;
+            padding: 3px 5px;
         }
 
         /* Estilo del modal */
@@ -179,7 +179,6 @@
     </div>
 
     <script>
-        // El resto del código no ha sido modificado, solo la parte de estilo
         const initialData = [
             { numero: 101, tipo: "Simple", estado: "Disponible", formaPago: "" },
             { numero: 102, tipo: "Doble", estado: "Reservada", formaPago: "Efectivo" },
