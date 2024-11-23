@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Habitaciones - Hotel</title>
     <style>
+        /* Mantengo el estilo existente */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f4f9;
@@ -116,9 +117,14 @@
     </div>
 
     <script>
-        const API_URL = "https://tu-servidor.com/api/habitaciones"; // Cambia por tu API real
-        let habitaciones = [];
+        const initialData = Array.from({ length: 10 }, (_, i) => ({
+            numero: 101 + i,
+            tipo: ["Simple", "Doble", "Matrimonial", "Suite"][(i % 4)],
+            estado: "Disponible",
+            formaPago: ""
+        }));
 
+        const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
         const container = document.getElementById("rooms-container");
         const modal = document.getElementById("modal");
         const modalRoomNumber = document.getElementById("modal-room-number");
@@ -126,36 +132,8 @@
         const modalPaymentSelect = document.getElementById("modal-payment-select");
         let currentRoom = null;
 
+        const channel = new BroadcastChannel("hotel-habitaciones");
         const estados = ["Disponible", "Reservada", "Ocupada"];
-
-        async function fetchHabitaciones() {
-            try {
-                const response = await fetch(API_URL); // Obtener datos desde el servidor
-                habitaciones = await response.json();
-                renderRooms(); // Redibuja las habitaciones con los datos actualizados
-            } catch (error) {
-                console.error("Error al obtener habitaciones:", error);
-            }
-        }
-
-        async function guardarEstado() {
-            if (currentRoom) {
-                currentRoom.estado = modalStateSelect.value;
-                currentRoom.formaPago = modalStateSelect.value === "Disponible" ? "" : modalPaymentSelect.value;
-
-                try {
-                    await fetch(API_URL, {
-                        method: "POST", // Cambia a PUT o PATCH según tu API
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(habitaciones),
-                    });
-                    fetchHabitaciones(); // Refresca los datos desde el servidor
-                } catch (error) {
-                    console.error("Error al guardar el estado:", error);
-                }
-                modal.classList.remove("active");
-            }
-        }
 
         function renderRooms() {
             container.innerHTML = "";
@@ -183,7 +161,30 @@
             modal.classList.add("active");
         }
 
-        fetchHabitaciones(); // Cargar datos iniciales desde el servidor
+        function guardarEstado() {
+            if (currentRoom) {
+                currentRoom.estado = modalStateSelect.value;
+                currentRoom.formaPago = modalStateSelect.value === "Disponible" ? "" : modalPaymentSelect.value;
+                sincronizarHabitaciones();
+                modal.classList.remove("active");
+                renderRooms();
+            }
+        }
+
+        function sincronizarHabitaciones() {
+            localStorage.setItem("habitaciones", JSON.stringify(habitaciones));
+            channel.postMessage(habitaciones);
+        }
+
+        channel.onmessage = e => {
+            if (e.data) {
+                habitaciones.length = 0;
+                habitaciones.push(...e.data);
+                renderRooms();
+            }
+        };
+
+        renderRooms();
     </script>
 </body>
 </html>
