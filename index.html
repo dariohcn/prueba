@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Habitaciones - Hotel</title>
     <style>
-        /* Estilos */
+        /* Estilo general */
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #f9f9f9;
-            color: #333;
+            background-color: #f4f4f9;
             margin: 0;
             padding: 0;
+            color: #333;
         }
+
         header {
             background-color: #4CAF50;
             color: white;
@@ -21,40 +21,90 @@
             text-align: center;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         main {
             margin: 20px auto;
             padding: 20px;
-            max-width: 1000px;
+            max-width: 1100px;
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-top: 20px;
         }
+
         table th, table td {
-            border: 1px solid #ddd;
-            padding: 10px;
             text-align: center;
+            padding: 10px;
         }
+
         table th {
             background-color: #4CAF50;
             color: white;
         }
-        select, button {
-            padding: 10px;
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .status {
+            font-weight: bold;
+            padding: 5px 10px;
             border-radius: 5px;
+            color: white;
+        }
+
+        .Disponible {
+            background-color: #4CAF50;
+        }
+
+        .Reservada {
+            background-color: #ff9800;
+        }
+
+        .Ocupada {
+            background-color: #f44336;
+        }
+
+        .Cancelada {
+            background-color: #9e9e9e;
+        }
+
+        .PagoPendiente {
+            background-color: #ffc107;
+        }
+
+        select {
+            padding: 10px;
             border: 1px solid #ddd;
+            border-radius: 5px;
             font-size: 14px;
         }
+
+        select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
         button {
+            padding: 10px 15px;
             background-color: #4CAF50;
             color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
             transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: #45a049;
         }
@@ -63,7 +113,7 @@
 <body>
     <header>
         <h1>Gestión de Habitaciones</h1>
-        <p>Administre el estado de las habitaciones de su hotel</p>
+        <p>Administre las habitaciones de su hotel de forma profesional</p>
     </header>
     <main>
         <table>
@@ -76,75 +126,68 @@
                 </tr>
             </thead>
             <tbody id="room-table">
-                <!-- Las filas serán generadas dinámicamente -->
+                <!-- Filas generadas dinámicamente -->
             </tbody>
         </table>
     </main>
     <script>
-        // Lista de habitaciones del hotel
+        // Lista de habitaciones
         const habitaciones = [
             { id: 1, tipo: "Simple", estado: "Disponible" },
             { id: 2, tipo: "Simple", estado: "Disponible" },
-            { id: 3, tipo: "Simple", estado: "Disponible" },
-            { id: 4, tipo: "Doble", estado: "Disponible" },
-            { id: 5, tipo: "Doble", estado: "Disponible" },
-            { id: 6, tipo: "Doble", estado: "Disponible" },
-            { id: 7, tipo: "Matrimonial", estado: "Disponible" },
-            { id: 8, tipo: "Matrimonial", estado: "Disponible" },
-            { id: 9, tipo: "Matrimonial", estado: "Disponible" },
-            { id: 10, tipo: "Suite", estado: "Disponible" },
-            { id: 11, tipo: "Suite", estado: "Disponible" },
-            { id: 12, tipo: "Suite", estado: "Disponible" },
-            { id: 13, tipo: "Simple", estado: "Disponible" },
-            { id: 14, tipo: "Doble", estado: "Disponible" },
-            { id: 15, tipo: "Matrimonial", estado: "Disponible" },
-            { id: 16, tipo: "Suite", estado: "Disponible" },
-            { id: 17, tipo: "Simple", estado: "Disponible" },
-            { id: 18, tipo: "Doble", estado: "Disponible" },
-            { id: 19, tipo: "Matrimonial", estado: "Disponible" },
-            { id: 20, tipo: "Suite", estado: "Disponible" },
+            { id: 3, tipo: "Simple", estado: "Ocupada" },
+            { id: 4, tipo: "Doble", estado: "Reservada" },
+            { id: 5, tipo: "Doble", estado: "PagoPendiente" },
+            { id: 6, tipo: "Matrimonial", estado: "Disponible" },
+            { id: 7, tipo: "Suite", estado: "Cancelada" },
+            { id: 8, tipo: "Suite", estado: "Disponible" },
         ];
 
-        // Referencia al cuerpo de la tabla
         const tableBody = document.getElementById("room-table");
 
         // Función para renderizar la tabla
         function renderTable() {
-            tableBody.innerHTML = ""; // Limpia el contenido previo
+            tableBody.innerHTML = "";
 
-            habitaciones.forEach((hab) => {
+            habitaciones.forEach(hab => {
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
                     <td>${hab.id}</td>
                     <td>${hab.tipo}</td>
-                    <td>${hab.estado}</td>
+                    <td><span class="status ${hab.estado}">${formatEstado(hab.estado)}</span></td>
                     <td>
-                        <select onchange="cambiarEstado(${hab.id}, this.value)">
-                            <option value="" disabled selected>Seleccione</option>
+                        <select onchange="actualizarEstado(${hab.id}, this.value)">
+                            <option value="" disabled selected>Cambiar estado</option>
                             <option value="Disponible">Disponible</option>
                             <option value="Reservada">Reservada</option>
                             <option value="Ocupada">Ocupada</option>
                             <option value="Cancelada">Cancelada</option>
-                            <option value="Pago Pendiente">Pago Pendiente</option>
+                            <option value="PagoPendiente">Pago Pendiente</option>
                         </select>
                     </td>
                 `;
+
                 tableBody.appendChild(row);
             });
         }
 
-        // Función para cambiar el estado de una habitación
-        function cambiarEstado(id, nuevoEstado) {
-            const habitacion = habitaciones.find((h) => h.id === id);
+        // Función para actualizar el estado de una habitación
+        function actualizarEstado(id, nuevoEstado) {
+            const habitacion = habitaciones.find(h => h.id === id);
             if (habitacion) {
                 habitacion.estado = nuevoEstado;
-                alert(`El estado de la habitación ${id} ha sido actualizado a: ${nuevoEstado}`);
-                renderTable(); // Actualiza la tabla
+                alert(`El estado de la habitación ${id} se ha actualizado a ${formatEstado(nuevoEstado)}.`);
+                renderTable();
             }
         }
 
-        // Inicializar la tabla al cargar la página
+        // Formatear estados para mostrarlos correctamente
+        function formatEstado(estado) {
+            return estado.replace(/([A-Z])/g, " $1").trim();
+        }
+
+        // Inicializar la tabla
         renderTable();
     </script>
 </body>
