@@ -44,18 +44,19 @@
 
         .room-card {
             width: 100px;
-            height: 90px;
+            height: 100px; /* Altura ajustada */
             border-radius: 10px;
             text-align: center;
             padding: 5px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: space-around;
             align-items: center;
             cursor: pointer;
             color: white;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 12px; /* Tamaño reducido */
         }
 
         .room-card.Disponible {
@@ -71,10 +72,18 @@
         }
 
         .room-number {
-            font-size: 16px;
+            font-size: 14px; /* Tamaño de fuente reducido */
             background: rgba(255, 255, 255, 0.2);
             border-radius: 5px;
             padding: 3px 5px;
+            font-weight: bold;
+        }
+
+        .room-type,
+        .room-state,
+        .room-payment {
+            font-size: 12px;
+            margin: 2px 0;
         }
 
         .modal {
@@ -105,10 +114,24 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
 
+        .modal-content select,
+        .modal-content button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
         .modal-content button {
             background-color: #4CAF50;
             color: white;
             cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
@@ -170,9 +193,9 @@
                 card.onclick = () => abrirModal(hab);
                 card.innerHTML = `
                     <div class="room-number">${hab.numero}</div>
-                    <div>${hab.tipo}</div>
-                    <div>${hab.estado}</div>
-                    <div>${hab.formaPago || ""}</div>
+                    <div class="room-type">${hab.tipo}</div>
+                    <div class="room-state">${hab.estado}</div>
+                    <div class="room-payment">${hab.formaPago || ""}</div>
                 `;
                 container.appendChild(card);
             });
@@ -217,15 +240,6 @@
                 renderRooms();
             }
         };
-
-        window.addEventListener("storage", () => {
-            const data = JSON.parse(localStorage.getItem("habitaciones"));
-            if (data) {
-                habitaciones.length = 0;
-                habitaciones.push(...data);
-                renderRooms();
-            }
-        });
 
         modal.onclick = (e) => {
             if (e.target === modal) {
