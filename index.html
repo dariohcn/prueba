@@ -163,7 +163,7 @@
 <body>
     <header>
         <h1>Gestión de Habitaciones</h1>
-        <p>Administre las habitaciones de su hotel de forma visual</p>
+        <p>Administre las habitaciones de su hotel en tiempo real</p>
     </header>
     <main>
         <div class="rooms-container" id="rooms-container">
@@ -190,7 +190,7 @@
 
     <script>
         // Habitaciones iniciales
-        const habitaciones = [
+        const initialData = [
             { numero: 101, tipo: "Simple", estado: "Disponible" },
             { numero: 102, tipo: "Doble", estado: "Ocupada" },
             { numero: 103, tipo: "Matrimonial", estado: "Reservada" },
@@ -198,6 +198,8 @@
             { numero: 105, tipo: "Simple", estado: "Disponible" },
             { numero: 106, tipo: "Doble", estado: "Cancelada" },
         ];
+
+        const habitaciones = JSON.parse(localStorage.getItem("habitaciones")) || initialData;
 
         const container = document.getElementById("rooms-container");
         const modal = document.getElementById("modal");
@@ -234,10 +236,26 @@
             const nuevoEstado = modalSelect.value;
             if (nuevoEstado && currentRoom) {
                 currentRoom.estado = nuevoEstado;
+                guardarDatos();
                 modal.classList.remove("active");
                 renderRooms();
             }
         }
+
+        // Guardar datos en LocalStorage
+        function guardarDatos() {
+            localStorage.setItem("habitaciones", JSON.stringify(habitaciones));
+        }
+
+        // Sincronizar datos entre pestañas
+        window.addEventListener("storage", () => {
+            const data = JSON.parse(localStorage.getItem("habitaciones"));
+            if (data) {
+                habitaciones.length = 0;
+                habitaciones.push(...data);
+                renderRooms();
+            }
+        });
 
         // Cerrar el modal al hacer clic fuera
         modal.onclick = (e) => {
