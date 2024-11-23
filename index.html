@@ -49,8 +49,8 @@
         }
 
         .room-card {
-            width: 200px;
-            height: 180px;
+            width: 150px; /* Antes: 200px */
+            height: 120px; /* Antes: 180px */
             border-radius: 10px;
             text-align: center;
             padding: 10px;
@@ -179,7 +179,7 @@
     </div>
 
     <script>
-        // Habitaciones iniciales
+        // El resto del código no ha sido modificado, solo la parte de estilo
         const initialData = [
             { numero: 101, tipo: "Simple", estado: "Disponible", formaPago: "" },
             { numero: 102, tipo: "Doble", estado: "Reservada", formaPago: "Efectivo" },
@@ -197,13 +197,9 @@
 
         let currentRoom = null;
 
-        // BroadcastChannel para sincronización en tiempo real
         const channel = new BroadcastChannel("hotel-habitaciones");
-
-        // Estados posibles
         const estados = ["Disponible", "Reservada", "Ocupada"];
 
-        // Renderizar las habitaciones
         function renderRooms() {
             container.innerHTML = "";
             habitaciones.forEach((hab) => {
@@ -220,7 +216,6 @@
             });
         }
 
-        // Abrir el modal
         function abrirModal(habitacion) {
             currentRoom = habitacion;
             modalRoomNumber.textContent = `Número: ${habitacion.numero}`;
@@ -231,7 +226,6 @@
             modal.classList.add("active");
         }
 
-        // Guardar el estado y forma de pago
         function guardarEstado() {
             const nuevoEstado = modalStateSelect.value;
             const nuevaFormaPago = modalPaymentSelect.value;
@@ -246,17 +240,14 @@
             }
         }
 
-        // Guardar datos en LocalStorage
         function guardarDatos() {
             localStorage.setItem("habitaciones", JSON.stringify(habitaciones));
         }
 
-        // Enviar actualización por BroadcastChannel
         function enviarActualizacion() {
             channel.postMessage({ habitaciones });
         }
 
-        // Escuchar actualizaciones por BroadcastChannel
         channel.onmessage = (e) => {
             if (e.data.habitaciones) {
                 habitaciones.length = 0;
@@ -265,7 +256,6 @@
             }
         };
 
-        // Sincronizar datos entre pestañas
         window.addEventListener("storage", () => {
             const data = JSON.parse(localStorage.getItem("habitaciones"));
             if (data) {
@@ -275,14 +265,12 @@
             }
         });
 
-        // Cerrar el modal al hacer clic fuera
         modal.onclick = (e) => {
             if (e.target === modal) {
                 modal.classList.remove("active");
             }
         };
 
-        // Inicializar habitaciones
         renderRooms();
     </script>
 </body>
