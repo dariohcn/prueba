@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Habitaciones - Hotel</title>
+    <style>
+        /* Estilos */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        main {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 1000px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        select, button {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gestión de Habitaciones</h1>
+        <p>Administre el estado de las habitaciones de su hotel</p>
+    </header>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>N° Habitación</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="room-table">
+                <!-- Las filas serán generadas dinámicamente -->
+            </tbody>
+        </table>
+    </main>
+    <script>
+        // Lista de habitaciones del hotel
+        const habitaciones = [
+            { id: 1, tipo: "Simple", estado: "Disponible" },
+            { id: 2, tipo: "Simple", estado: "Disponible" },
+            { id: 3, tipo: "Simple", estado: "Disponible" },
+            { id: 4, tipo: "Doble", estado: "Disponible" },
+            { id: 5, tipo: "Doble", estado: "Disponible" },
+            { id: 6, tipo: "Doble", estado: "Disponible" },
+            { id: 7, tipo: "Matrimonial", estado: "Disponible" },
+            { id: 8, tipo: "Matrimonial", estado: "Disponible" },
+            { id: 9, tipo: "Matrimonial", estado: "Disponible" },
+            { id: 10, tipo: "Suite", estado: "Disponible" },
+            { id: 11, tipo: "Suite", estado: "Disponible" },
+            { id: 12, tipo: "Suite", estado: "Disponible" },
+            { id: 13, tipo: "Simple", estado: "Disponible" },
+            { id: 14, tipo: "Doble", estado: "Disponible" },
+            { id: 15, tipo: "Matrimonial", estado: "Disponible" },
+            { id: 16, tipo: "Suite", estado: "Disponible" },
+            { id: 17, tipo: "Simple", estado: "Disponible" },
+            { id: 18, tipo: "Doble", estado: "Disponible" },
+            { id: 19, tipo: "Matrimonial", estado: "Disponible" },
+            { id: 20, tipo: "Suite", estado: "Disponible" },
+        ];
+
+        // Referencia al cuerpo de la tabla
+        const tableBody = document.getElementById("room-table");
+
+        // Función para renderizar la tabla
+        function renderTable() {
+            tableBody.innerHTML = ""; // Limpia el contenido previo
+
+            habitaciones.forEach((hab) => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${hab.id}</td>
+                    <td>${hab.tipo}</td>
+                    <td>${hab.estado}</td>
+                    <td>
+                        <select onchange="cambiarEstado(${hab.id}, this.value)">
+                            <option value="" disabled selected>Seleccione</option>
+                            <option value="Disponible">Disponible</option>
+                            <option value="Reservada">Reservada</option>
+                            <option value="Ocupada">Ocupada</option>
+                            <option value="Cancelada">Cancelada</option>
+                            <option value="Pago Pendiente">Pago Pendiente</option>
+                        </select>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Función para cambiar el estado de una habitación
+        function cambiarEstado(id, nuevoEstado) {
+            const habitacion = habitaciones.find((h) => h.id === id);
+            if (habitacion) {
+                habitacion.estado = nuevoEstado;
+                alert(`El estado de la habitación ${id} ha sido actualizado a: ${nuevoEstado}`);
+                renderTable(); // Actualiza la tabla
+            }
+        }
+
+        // Inicializar la tabla al cargar la página
+        renderTable();
+    </script>
+</body>
+</html>
